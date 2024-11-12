@@ -1,45 +1,54 @@
-# R00kDoc Site
+# R00k Documentation Platform
 
-A modern documentation site built with React, TypeScript, and Vite, featuring persistent storage, markdown editing, and dynamic navigation.
+A modern documentation platform built with React, TypeScript, and Vite, featuring persistent storage, markdown editing, and dynamic navigation.
 
-## Technical Architecture
+## Features
 
-### Core Technologies
-- **React 18** with TypeScript for UI components
-- **Vite** for build tooling and development server
-- **Dexie.js** for IndexedDB persistence
-- **React Router** for client-side routing
-- **TailwindCSS** for styling
-- **Radix UI** for accessible component primitives
+### Content Management
+- Dynamic page rendering from database
+- Markdown editing with live preview
+- Automatic content persistence
+- Toast notifications for save operations
 
-### Data Persistence
-The application uses IndexedDB through Dexie.js for client-side storage:
+### Navigation
+- Drag-and-drop section and topic reordering
+- Editable titles and descriptions
+- Persistent navigation configuration
+- Automatic breadcrumb generation
 
-```typescript
-// Database Schema
-pageContents: 'path' // Stores markdown content by URL path
-sidebarConfig: 'id'  // Stores navigation structure
+### User Interface
+- Dark mode optimized
+- Responsive layout
+- Keyboard shortcuts
+- Toast notifications
+- Loading states and animations
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── layout/          # Layout components
+│   ├── sidebar-editor/  # Navigation editor components
+│   ├── ui/             # Shared UI components
+│   └── ...             # Other components
+├── contexts/           # React contexts
+├── pages/             # Page components
+├── services/          # Service layer
+└── types/            # TypeScript types
 ```
 
-Key features of the persistence layer:
-- Automatic content saving with 1-second debounce
-- Path-based content storage
-- Sidebar configuration persistence
-- Automatic schema versioning
+## Technology Stack
 
-### Component Architecture
+- **Frontend Framework**: React 18 with TypeScript
+- **Build Tool**: Vite
+- **Routing**: React Router v6
+- **Storage**: IndexedDB (Dexie.js)
+- **Styling**: TailwindCSS
+- **UI Components**: Radix UI
+- **Drag and Drop**: react-beautiful-dnd
 
-#### Core Components
-- `MarkdownEditor`: Rich markdown editor with preview
-- `SidebarProvider`: Navigation state management with persistence
-- `DocumentDatabase`: IndexedDB wrapper for data storage
-
-#### State Management
-- React Context for global state
-- Dexie.js for persistent storage
-- Component-local state for UI interactions
-
-## Development Setup
+## Getting Started
 
 1. Install dependencies:
 ```bash
@@ -56,92 +65,76 @@ npm run dev
 npm run build
 ```
 
-## Key Features
+## Data Persistence
 
-### Markdown Editor
-- Real-time preview
-- Keyboard shortcuts
-- Automatic content saving
-- Toolbar for common formatting
-- Support for GitHub Flavored Markdown
+The application uses IndexedDB through Dexie.js for client-side storage:
 
-### Navigation
-- Drag-and-drop section reordering
-- Nested navigation structure
-- Persistent configuration
-- Breadcrumb navigation
-
-### Data Persistence
-The application uses IndexedDB for client-side storage:
+### Database Schema
 
 ```typescript
 interface PageContent {
-  path: string;
-  content: string;
-  lastModified: Date;
+  path: string
+  content: string
+  lastModified: Date
 }
 
 interface SidebarConfig {
-  id: string;
-  items: SidebarItems;
-  lastModified: Date;
+  id: string
+  items: SidebarItems
+  lastModified: Date
+}
+
+interface SiteContent {
+  id: string
+  content: string
+  lastModified: Date
 }
 ```
 
-Data is automatically persisted:
-- Content changes are saved after 1 second of inactivity
-- Sidebar configuration is saved immediately on changes
-- All data persists across browser sessions
+## Key Components
 
-### Keyboard Shortcuts
+### DynamicDocPage
+- Renders documentation pages dynamically
+- Loads content from database
+- Syncs with navigation configuration
+- Handles content updates
+
+### Navigation Editor
+- Drag-and-drop interface
+- Section and topic management
+- Description editing
+- Automatic persistence
+
+### Markdown Editor
+- Live preview
+- Keyboard shortcuts
+- Toolbar for common actions
+- Automatic saving
+
+## Keyboard Shortcuts
+
+- `⌘/Ctrl + K`: Open search
 - `⌘/Ctrl + P`: Toggle preview
-- `⌘/Ctrl + B`: Bold
-- `⌘/Ctrl + I`: Italic
-- `⌘/Ctrl + K`: Insert link
-- `⌘/Ctrl + 1/2/3`: Heading levels
+- `⌘/Ctrl + B`: Bold text
+- `⌘/Ctrl + I`: Italic text
+- `Alt + ←/→`: Navigate between pages
 
-## Component API Reference
+## Contributing
 
-### MarkdownEditor
-```typescript
-interface MarkdownEditorProps {
-  content: string;
-  isOpen: boolean;
-  onClose: () => void;
-  onSave: (content: string) => void;
-}
-```
-
-### SidebarProvider
-```typescript
-interface SidebarProviderProps {
-  initialItems: SidebarItems;
-  children: React.ReactNode;
-}
-```
-
-### Database Service
-```typescript
-class DocumentDatabase {
-  async savePageContent(path: string, content: string): Promise<void>;
-  async getPageContent(path: string): Promise<string | null>;
-  async saveSidebarConfig(items: SidebarItems): Promise<void>;
-  async getSidebarConfig(): Promise<SidebarItems | null>;
-}
-```
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests and linting
+5. Submit a pull request
 
 ## Browser Support
-The application requires browsers with IndexedDB support:
+
 - Chrome/Edge 76+
 - Firefox 65+
 - Safari 14.1+
 
-## Contributing
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+Requires browsers with IndexedDB support for content persistence.
 
 ## License
+
 MIT License - see LICENSE file for details
