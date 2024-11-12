@@ -1,9 +1,12 @@
 export interface SidebarItem {
-  title: string;
-  items: {
-    title: string;
-    href: string;
-  }[];
+  title: string
+  href: string
+  description: string
 }
 
-export type SidebarItems = SidebarItem[];
+export interface SidebarSection {
+  title: string
+  items: SidebarItem[]
+}
+
+export type SidebarItems = SidebarSection[]

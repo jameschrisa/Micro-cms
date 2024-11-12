@@ -1,7 +1,37 @@
+import { useEffect, useState } from "react"
 import { DocPage } from "../../components/doc-page"
+import { db } from "../../services/db"
+import { useSidebar } from "../../contexts/sidebar-context"
+import { useLocation } from "react-router-dom"
 
-const content = `
-# Interactive Graph Visualization
+export function GraphVisualizationPage() {
+  const [content, setContent] = useState<string>('')
+  const [isLoading, setIsLoading] = useState(true)
+  const location = useLocation()
+  const { items } = useSidebar()
+
+  // Find the current page title from navigation
+  const pageInfo = items.reduce<{ title: string; description: string } | undefined>((found, section) => {
+    if (found) return found
+    const topic = section.items.find(item => item.href === location.pathname)
+    if (topic) {
+      return {
+        title: topic.title,
+        description: "Visualize and interact with your supply chain network using interactive graph visualization tools."
+      }
+    }
+    return undefined
+  }, undefined)
+
+  useEffect(() => {
+    const loadContent = async () => {
+      const savedContent = await db.getPageContent(location.pathname)
+      if (savedContent) {
+        setContent(savedContent)
+      } else {
+        // Initialize with default content if none exists
+        const defaultContent = `
+# ${pageInfo?.title || 'Interactive Graph Visualization'}
 
 Learn how to visualize and interact with your supply chain network using our interactive graph visualization tools.
 
@@ -54,16 +84,33 @@ To begin using the interactive graph visualization:
 - Export visualizations for reporting and documentation
 - Share insights with stakeholders using the collaboration tools
 `
+        await db.savePageContent(location.pathname, defaultContent)
+        setContent(defaultContent)
+      }
+      setIsLoading(false)
+    }
+    loadContent()
+  }, [location.pathname, pageInfo?.title])
 
-export function GraphVisualizationPage() {
+  if (isLoading) {
+    return (
+      <div className="animate-pulse space-y-4">
+        <div className="h-8 w-2/3 bg-muted rounded"></div>
+        <div className="h-4 w-full bg-muted rounded"></div>
+        <div className="h-4 w-5/6 bg-muted rounded"></div>
+        <div className="h-4 w-4/6 bg-muted rounded"></div>
+      </div>
+    )
+  }
+
   return (
     <DocPage
-      title="Interactive Graph Visualization"
-      description="Learn how to visualize and interact with your supply chain network using our interactive graph visualization tools."
+      title={pageInfo?.title || 'Interactive Graph Visualization'}
+      description={pageInfo?.description || ''}
       content={content}
-      onContentChange={(newContent) => {
-        console.log('Content updated:', newContent)
-        // Here you would typically save the content to your backend
+      onContentChange={async (newContent) => {
+        await db.savePageContent(location.pathname, newContent)
+        setContent(newContent)
       }}
     />
   )

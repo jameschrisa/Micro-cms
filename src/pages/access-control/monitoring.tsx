@@ -1,111 +1,134 @@
+import { useEffect, useState } from "react"
 import { DocPage } from "../../components/doc-page"
+import { db } from "../../services/db"
+import { useSidebar } from "../../contexts/sidebar-context"
+import { useLocation } from "react-router-dom"
 
-const content = `
-# Access Control Monitoring
+export function AccessControlMonitoringPage() {
+  const [content, setContent] = useState<string>('')
+  const [isLoading, setIsLoading] = useState(true)
+  const location = useLocation()
+  const { items } = useSidebar()
+
+  // Find the current page title from navigation
+  const pageInfo = items.reduce<{ title: string; description: string } | undefined>((found, section) => {
+    if (found) return found
+    const topic = section.items.find(item => item.href === location.pathname)
+    if (topic) {
+      return {
+        title: topic.title,
+        description: "Monitor and manage access control across your organization's systems and resources."
+      }
+    }
+    return undefined
+  }, undefined)
+
+  useEffect(() => {
+    const loadContent = async () => {
+      const savedContent = await db.getPageContent(location.pathname)
+      if (savedContent) {
+        setContent(savedContent)
+      } else {
+        // Initialize with default content if none exists
+        const defaultContent = `
+# ${pageInfo?.title || 'Access Control Monitoring'}
 
 Learn how to effectively monitor and manage access control across your organization's systems and resources.
 
 ## Overview
 
-Access Control Monitoring provides real-time visibility into user access patterns, permissions, and potential security risks. This system helps you:
+Access control monitoring is a critical component of security management that helps ensure:
 
-- Track and audit user access across all systems
-- Detect unauthorized access attempts
-- Monitor privilege escalations
-- Identify potential security breaches
-- Ensure compliance with security policies
+- Only authorized users have access to sensitive resources
+- Access patterns are tracked and analyzed for anomalies
+- Compliance with security policies and regulations
+- Quick detection and response to unauthorized access attempts
 
 ## Key Features
 
 ### Real-time Monitoring
 
-The system provides real-time monitoring of:
+Our access control monitoring system provides real-time visibility into:
 
-- User login attempts
-- Permission changes
-- Resource access
-- Administrative actions
-- System modifications
+- Active user sessions
+- Authentication attempts
+- Resource access patterns
+- Privilege escalations
+- Policy violations
 
 ### Anomaly Detection
 
-Our advanced anomaly detection system identifies:
+The system automatically identifies suspicious activities such as:
 
-- Unusual access patterns
-- Off-hours activity
-- Geographical anomalies
-- Multiple failed login attempts
-- Suspicious permission changes
+- Unusual login times or locations
+- Multiple failed authentication attempts
+- Unexpected privilege escalations
+- Abnormal resource access patterns
+- Unauthorized configuration changes
 
-### Automated Alerts
+### Automated Response
 
-Configure automated alerts for:
+Configure automated responses to security events:
 
-- Unauthorized access attempts
-- Privilege escalation events
-- Policy violations
-- System configuration changes
-- Critical resource access
+- Account lockouts after failed attempts
+- Alert notifications to security teams
+- Session termination for suspicious activity
+- Temporary access restrictions
+- Automated incident ticketing
 
-## Implementation Guide
+## Best Practices
 
-### Setting Up Monitoring
+### Regular Auditing
 
-1. Define monitoring scope
-   - Identify critical systems
-   - Determine access points
-   - List required metrics
+- Review access logs daily
+- Analyze authentication patterns weekly
+- Audit user permissions monthly
+- Update access policies quarterly
+- Conduct comprehensive reviews annually
 
-2. Configure monitoring rules
-   - Set up alert thresholds
-   - Define normal behavior patterns
-   - Establish baseline metrics
+### Policy Enforcement
 
-3. Enable logging
-   - Configure system logs
-   - Set up audit trails
-   - Enable user activity tracking
+- Implement least privilege access
+- Require multi-factor authentication
+- Set strong password policies
+- Define clear access request procedures
+- Document all policy exceptions
 
-### Best Practices
+### Incident Response
 
-- Regularly review access logs
-- Update monitoring rules periodically
-- Document unusual activities
-- Maintain audit trails
-- Conduct regular security assessments
-
-## Compliance and Reporting
-
-### Automated Reports
-
-The system generates automated reports for:
-
-- Daily access summaries
-- Weekly security incidents
-- Monthly compliance status
-- Quarterly trend analysis
-- Annual security assessments
-
-### Compliance Features
-
-Built-in support for common compliance requirements:
-
-- SOX compliance tracking
-- GDPR requirements
-- HIPAA compliance
-- PCI DSS monitoring
-- ISO 27001 controls
+- Establish clear escalation procedures
+- Define incident severity levels
+- Document response protocols
+- Train response teams regularly
+- Review and update procedures quarterly
 `
+        await db.savePageContent(location.pathname, defaultContent)
+        setContent(defaultContent)
+      }
+      setIsLoading(false)
+    }
+    loadContent()
+  }, [location.pathname, pageInfo?.title])
 
-export function AccessControlMonitoringPage() {
+  if (isLoading) {
+    return (
+      <div className="animate-pulse space-y-4">
+        <div className="h-8 w-2/3 bg-muted rounded"></div>
+        <div className="h-4 w-full bg-muted rounded"></div>
+        <div className="h-4 w-5/6 bg-muted rounded"></div>
+        <div className="h-4 w-4/6 bg-muted rounded"></div>
+      </div>
+    )
+  }
+
   return (
     <DocPage
-      title="Access Control Monitoring"
-      description="Learn how to effectively monitor and manage access control across your organization's systems and resources."
+      title={pageInfo?.title || 'Access Control Monitoring'}
+      description={pageInfo?.description || ''}
       content={content}
-      onContentChange={(newContent) => {
-        console.log('Content updated:', newContent)
-        // Here you would typically save the content to your backend
+      onContentChange={async (newContent) => {
+        await db.savePageContent(location.pathname, newContent)
+        setContent(newContent)
       }}
     />
   )

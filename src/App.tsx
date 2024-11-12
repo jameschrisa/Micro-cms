@@ -1,264 +1,30 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider, createRoutesFromElements, Route, useLocation, Outlet } from 'react-router-dom'
 import { SiteHeader } from './components/layout/site-header'
 import { Sidebar } from './components/layout/sidebar'
 import { GraphVisualizationPage } from './pages/supply-chain/graph-visualization'
 import { AccessControlMonitoringPage } from './pages/access-control/monitoring'
 import { NavigationProvider, useNavigation, findAdjacentPages } from './contexts/navigation-context'
 import { KeyboardProvider, KeyboardShortcuts } from './contexts/keyboard-context'
-import { SidebarProvider } from './contexts/sidebar-context'
+import { SidebarProvider, useSidebar } from './contexts/sidebar-context'
 import { DocPage } from './components/doc-page'
-import { useEffect } from 'react'
+import { SettingsPage } from './pages/settings'
+import { useEffect, useState } from 'react'
 import { SidebarItems } from './types/sidebar'
-
-const sidebarItems: SidebarItems = [
-  {
-    title: "Security Fundamentals",
-    items: [
-      {
-        title: "Why it's important?",
-        href: "/docs/security/importance",
-      },
-      {
-        title: "Emerging Threats and AI",
-        href: "/docs/security/emerging-threats",
-      },
-      {
-        title: "Infrastructure Protection",
-        href: "/docs/security/infrastructure",
-      },
-      {
-        title: "Threat Intelligence",
-        href: "/docs/security/threat-intelligence",
-      },
-      {
-        title: "Vulnerability Management",
-        href: "/docs/security/vulnerability-management",
-      },
-    ],
-  },
-  {
-    title: "Supply Chain Risk Management",
-    items: [
-      {
-        title: "Supply Chain Vulnerabilities",
-        href: "/docs/risk/vulnerabilities",
-      },
-      {
-        title: "Risk Assessment Fundamentals",
-        href: "/docs/risk/assessment",
-      },
-      {
-        title: "Supply Chain Resilience",
-        href: "/docs/risk/resilience",
-      },
-      {
-        title: "Third-Party Risk Management",
-        href: "/docs/risk/third-party",
-      },
-      {
-        title: "Global Threat Landscape",
-        href: "/docs/risk/global-threats",
-      },
-    ],
-  },
-  {
-    title: "Cybersecurity in Supply Chain",
-    items: [
-      {
-        title: "Supply Chain Cyber Risks",
-        href: "/docs/cyber/risks",
-      },
-      {
-        title: "Protecting Supply Chain Data",
-        href: "/docs/cyber/data-protection",
-      },
-      {
-        title: "Cyber Attack Vectors",
-        href: "/docs/cyber/attack-vectors",
-      },
-      {
-        title: "Cyber Resilience Strategies",
-        href: "/docs/cyber/resilience",
-      },
-      {
-        title: "Incident Response",
-        href: "/docs/cyber/incident-response",
-      },
-      {
-        title: "Supply Chain Security",
-        href: "/docs/cyber/security",
-      },
-    ],
-  },
-  {
-    title: "Supply Chain Network",
-    items: [
-      {
-        title: "Interactive Graph Visualization",
-        href: "/docs/supply-chain/graph-visualization",
-      },
-      {
-        title: "Real-time Dependency Mapping",
-        href: "/docs/supply-chain/dependency-mapping",
-      },
-      {
-        title: "Risk Level Indicators",
-        href: "/docs/supply-chain/risk-indicators",
-      },
-      {
-        title: "Relationship Strength Analysis",
-        href: "/docs/supply-chain/relationship-analysis",
-      },
-    ],
-  },
-  {
-    title: "Access Control Risk",
-    items: [
-      {
-        title: "Access Control Monitoring",
-        href: "/docs/access-control/monitoring",
-      },
-      {
-        title: "Authentication Anomaly Detection",
-        href: "/docs/access-control/anomaly-detection",
-      },
-      {
-        title: "Privileged Access Tracking",
-        href: "/docs/access-control/privileged-access",
-      },
-      {
-        title: "Access Pattern Analysis",
-        href: "/docs/access-control/pattern-analysis",
-      },
-    ],
-  },
-  {
-    title: "Compliance Management",
-    items: [
-      {
-        title: "Compliance Rate Tracking",
-        href: "/docs/compliance/rate-tracking",
-      },
-      {
-        title: "Audit Management",
-        href: "/docs/compliance/audit-management",
-      },
-      {
-        title: "Training Status Monitoring",
-        href: "/docs/compliance/training-status",
-      },
-      {
-        title: "Regulatory Requirement Mapping",
-        href: "/docs/compliance/requirement-mapping",
-      },
-    ],
-  },
-  {
-    title: "Data Management",
-    items: [
-      {
-        title: "Data Classification",
-        href: "/docs/data/classification",
-      },
-      {
-        title: "Storage Distribution Analysis",
-        href: "/docs/data/storage-distribution",
-      },
-      {
-        title: "Data Residency Tracking",
-        href: "/docs/data/residency-tracking",
-      },
-      {
-        title: "Source Management",
-        href: "/docs/data/source-management",
-      },
-    ],
-  },
-  {
-    title: "Control Management",
-    items: [
-      {
-        title: "Control Implementation Tracking",
-        href: "/docs/control/implementation-tracking",
-      },
-      {
-        title: "Effectiveness Monitoring",
-        href: "/docs/control/effectiveness-monitoring",
-      },
-      {
-        title: "Distribution Analysis",
-        href: "/docs/control/distribution-analysis",
-      },
-      {
-        title: "Compliance Mapping",
-        href: "/docs/control/compliance-mapping",
-      },
-    ],
-  },
-  {
-    title: "Business Continuity",
-    items: [
-      {
-        title: "Asset Criticality Assessment",
-        href: "/docs/continuity/asset-criticality",
-      },
-      {
-        title: "Recovery Time Objectives",
-        href: "/docs/continuity/rto",
-      },
-      {
-        title: "Recovery Point Objectives",
-        href: "/docs/continuity/rpo",
-      },
-      {
-        title: "Impact Analysis",
-        href: "/docs/continuity/impact-analysis",
-      },
-    ],
-  },
-]
-
-const introContent = `
-# r00k Documentation
-
-Welcome to the comprehensive security and risk management documentation. This platform provides detailed information about:
-
-- Security Fundamentals
-- Supply Chain Risk Management
-- Cybersecurity in Supply Chain
-- Supply Chain Network Visualization
-- Access Control Risk Management
-- Compliance Management
-- Data Management
-- Control Management
-- Business Continuity
-
-Use the sidebar navigation to explore detailed documentation for each topic.
-
-## Getting Started
-
-Choose a topic from the sidebar to begin exploring our documentation. Each section provides in-depth information, practical examples, and best practices.
-
-## Documentation Features
-
-- **Interactive Navigation**: Use the sidebar to browse through different topics
-- **Search Functionality**: Quickly find specific information using the search bar
-- **Keyboard Shortcuts**: Navigate efficiently using keyboard shortcuts
-- **Edit Capability**: Authorized users can edit and improve documentation
-- **Dark Mode**: Optimized for comfortable reading in low-light environments
-`
+import { db } from './services/db'
+import { ToastContainer } from './components/ui/toast'
 
 function NavigationUpdater() {
   const location = useLocation()
   const { setPreviousPage, setNextPage } = useNavigation()
+  const { items } = useSidebar()
 
   useEffect(() => {
-    const { previous, next } = findAdjacentPages(sidebarItems, location.pathname)
+    const { previous, next } = findAdjacentPages(items, location.pathname)
     setPreviousPage(previous)
     setNextPage(next)
-  }, [location.pathname, setPreviousPage, setNextPage])
+  }, [location.pathname, setPreviousPage, setNextPage, items])
 
-  return null
+  return <Outlet />
 }
 
 // Mock authentication state - in a real app, this would come from your auth system
@@ -284,71 +50,164 @@ function DocsLayout({ children }: { children: React.ReactNode }) {
 }
 
 function Introduction() {
+  const [content, setContent] = useState<string>('')
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const loadContent = async () => {
+      const introContent = await db.getSiteContent('intro')
+      if (introContent) {
+        setContent(introContent)
+      }
+      setIsLoading(false)
+    }
+    loadContent()
+  }, [])
+
+  if (isLoading) {
+    return (
+      <div className="animate-pulse space-y-4">
+        <div className="h-8 w-2/3 bg-muted rounded"></div>
+        <div className="h-4 w-full bg-muted rounded"></div>
+        <div className="h-4 w-5/6 bg-muted rounded"></div>
+        <div className="h-4 w-4/6 bg-muted rounded"></div>
+      </div>
+    )
+  }
+
   return (
     <DocPage
       title="r00k Documentation"
       description="Comprehensive security and risk management documentation platform."
-      content={introContent}
-      onContentChange={(newContent: string) => {
-        console.log('Content updated:', newContent)
-        // Here you would typically save the content to your backend
+      content={content}
+      onContentChange={async (newContent: string) => {
+        await db.saveSiteContent('intro', newContent)
+        setContent(newContent)
       }}
     />
   )
 }
 
-function AppRoutes() {
+function DynamicDocPage() {
+  const [content, setContent] = useState<string>('')
+  const [isLoading, setIsLoading] = useState(true)
+  const location = useLocation()
+  const { items } = useSidebar()
+
+  // Find the current page info from navigation
+  const pageInfo = items.reduce<{ title: string; description: string } | undefined>((found, section) => {
+    if (found) return found
+    const topic = section.items.find(item => item.href === location.pathname)
+    if (topic) {
+      return {
+        title: topic.title,
+        description: topic.description
+      }
+    }
+    return undefined
+  }, undefined)
+
+  useEffect(() => {
+    const loadContent = async () => {
+      const savedContent = await db.getPageContent(location.pathname)
+      if (savedContent) {
+        setContent(savedContent)
+      }
+      setIsLoading(false)
+    }
+    loadContent()
+  }, [location.pathname])
+
+  if (isLoading) {
+    return (
+      <div className="animate-pulse space-y-4">
+        <div className="h-8 w-2/3 bg-muted rounded"></div>
+        <div className="h-4 w-full bg-muted rounded"></div>
+        <div className="h-4 w-5/6 bg-muted rounded"></div>
+        <div className="h-4 w-4/6 bg-muted rounded"></div>
+      </div>
+    )
+  }
+
   return (
-    <>
-      <NavigationUpdater />
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <DocsLayout>
-              <Introduction />
-            </DocsLayout>
-          }
-        />
-        <Route
-          path="/docs/supply-chain/graph-visualization"
-          element={
-            <DocsLayout>
-              <GraphVisualizationPage />
-            </DocsLayout>
-          }
-        />
-        <Route
-          path="/docs/access-control/monitoring"
-          element={
-            <DocsLayout>
-              <AccessControlMonitoringPage />
-            </DocsLayout>
-          }
-        />
-        <Route
-          path="/docs/*"
-          element={
-            <DocsLayout>
-              <Introduction />
-            </DocsLayout>
-          }
-        />
-      </Routes>
-    </>
+    <DocPage
+      title={pageInfo?.title || 'Documentation'}
+      description={pageInfo?.description || ''}
+      content={content}
+      onContentChange={async (newContent: string) => {
+        await db.savePageContent(location.pathname, newContent)
+        setContent(newContent)
+      }}
+    />
   )
 }
 
-export default function App() {
+function AppWithProviders() {
+  const [initialItems, setInitialItems] = useState<SidebarItems>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const loadSidebar = async () => {
+      const items = await db.getSidebarConfig()
+      if (items) {
+        setInitialItems(items)
+      }
+      setIsLoading(false)
+    }
+    loadSidebar()
+  }, [])
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      </div>
+    )
+  }
+
   return (
-    <Router>
-      <NavigationProvider>
-        <KeyboardProvider>
-          <SidebarProvider initialItems={sidebarItems}>
-            <AppRoutes />
-          </SidebarProvider>
-        </KeyboardProvider>
-      </NavigationProvider>
-    </Router>
+    <NavigationProvider>
+      <KeyboardProvider>
+        <SidebarProvider initialItems={initialItems}>
+          <NavigationUpdater />
+          <ToastContainer />
+        </SidebarProvider>
+      </KeyboardProvider>
+    </NavigationProvider>
   )
+}
+
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route element={<AppWithProviders />}>
+      <Route
+        path="/"
+        element={
+          <DocsLayout>
+            <Introduction />
+          </DocsLayout>
+        }
+      />
+      <Route
+        path="/docs/*"
+        element={
+          <DocsLayout>
+            <DynamicDocPage />
+          </DocsLayout>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <DocsLayout>
+            <SettingsPage />
+          </DocsLayout>
+        }
+      />
+    </Route>
+  )
+)
+
+export default function App() {
+  return <RouterProvider router={router} />
 }

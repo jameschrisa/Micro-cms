@@ -1,11 +1,13 @@
 import { CircleUserRound, Settings, LogOut, Bell, Shield, Key } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
+import { Link, useNavigate } from "react-router-dom"
 
 export function UserNav() {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const menuItemRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const navigate = useNavigate()
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -57,6 +59,11 @@ export function UserNav() {
         menuItems[menuItems.length - 1]?.focus()
         break
     }
+  }
+
+  const handleSettingsClick = () => {
+    setIsOpen(false)
+    navigate('/settings')
   }
 
   return (
@@ -112,6 +119,7 @@ export function UserNav() {
             ref={el => menuItemRefs.current[2] = el}
             className="relative flex w-full cursor-default select-none items-center rounded-sm px-3 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground transition-colors"
             role="menuitem"
+            onClick={handleSettingsClick}
           >
             <Settings className="mr-3 h-4 w-4" />
             <span>Settings</span>

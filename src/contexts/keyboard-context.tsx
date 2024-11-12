@@ -6,6 +6,8 @@ import { Keyboard, X } from 'lucide-react'
 interface KeyboardContextType {
   isSearchOpen: boolean
   setIsSearchOpen: (isOpen: boolean) => void
+  keyboardShortcutsEnabled: boolean
+  setKeyboardShortcutsEnabled: (enabled: boolean) => void
 }
 
 const KeyboardContext = createContext<KeyboardContextType | undefined>(undefined)
@@ -16,11 +18,23 @@ interface KeyboardProviderProps {
 
 export function KeyboardProvider({ children }: KeyboardProviderProps) {
   const [isSearchOpen, setIsSearchOpen] = React.useState(false)
+  const [keyboardShortcutsEnabled, setKeyboardShortcutsEnabled] = React.useState(() => {
+    // Load the initial state from localStorage, default to true if not set
+    const saved = localStorage.getItem('keyboardShortcutsEnabled')
+    return saved !== null ? JSON.parse(saved) : true
+  })
   const navigate = useNavigate()
   const { previousPage, nextPage } = useNavigation()
 
+  // Save the keyboard shortcuts state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('keyboardShortcutsEnabled', JSON.stringify(keyboardShortcutsEnabled))
+  }, [keyboardShortcutsEnabled])
+
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
+      if (!keyboardShortcutsEnabled) return
+
       // Search shortcut (Cmd/Ctrl + K)
       if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
         event.preventDefault()
@@ -53,10 +67,17 @@ export function KeyboardProvider({ children }: KeyboardProviderProps) {
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [navigate, previousPage, nextPage])
+  }, [navigate, previousPage, nextPage, keyboardShortcutsEnabled])
 
   return (
-    <KeyboardContext.Provider value={{ isSearchOpen, setIsSearchOpen }}>
+    <KeyboardContext.Provider 
+      value={{ 
+        isSearchOpen, 
+        setIsSearchOpen, 
+        keyboardShortcutsEnabled, 
+        setKeyboardShortcutsEnabled 
+      }}
+    >
       {children}
     </KeyboardContext.Provider>
   )
@@ -73,6 +94,9 @@ export function useKeyboard() {
 // Keyboard shortcut hints component
 export function KeyboardShortcuts() {
   const [isVisible, setIsVisible] = React.useState(false)
+  const { keyboardShortcutsEnabled } = useKeyboard()
+
+  if (!keyboardShortcutsEnabled) return null
 
   return (
     <div className="fixed bottom-4 right-4 z-50">

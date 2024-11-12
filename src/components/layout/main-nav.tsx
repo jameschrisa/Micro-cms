@@ -12,8 +12,7 @@ export function MainNav() {
           <img 
             src={logo} 
             alt="r00k logo" 
-            className="w-full h-full text-foreground"
-            style={{ filter: 'invert(1)' }} // Makes the SVG white in dark mode
+            className="w-full h-full"
           />
         </div>
         <span className="font-semibold text-lg tracking-tight">r00k Documentation</span>
