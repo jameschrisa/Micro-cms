@@ -1,8 +1,6 @@
 import { createBrowserRouter, RouterProvider, createRoutesFromElements, Route, useLocation, Outlet } from 'react-router-dom'
 import { SiteHeader } from './components/layout/site-header'
 import { Sidebar } from './components/layout/sidebar'
-import { GraphVisualizationPage } from './pages/supply-chain/graph-visualization'
-import { AccessControlMonitoringPage } from './pages/access-control/monitoring'
 import { NavigationProvider, useNavigation, findAdjacentPages } from './contexts/navigation-context'
 import { KeyboardProvider, KeyboardShortcuts } from './contexts/keyboard-context'
 import { SidebarProvider, useSidebar } from './contexts/sidebar-context'
