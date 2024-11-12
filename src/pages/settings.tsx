@@ -1,8 +1,11 @@
 import { Switch } from '@radix-ui/react-switch'
 import { useKeyboard } from '../contexts/keyboard-context'
+import { useUserRole } from '../contexts/user-role-context'
+import { DatabasePanel } from '../components/database-panel'
 
 export function SettingsPage() {
   const { keyboardShortcutsEnabled, setKeyboardShortcutsEnabled } = useKeyboard()
+  const { isAdmin } = useUserRole()
 
   return (
     <div className="space-y-6">
@@ -71,6 +74,12 @@ export function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {isAdmin && (
+        <div className="border rounded-lg p-6">
+          <DatabasePanel />
+        </div>
+      )}
     </div>
   )
 }

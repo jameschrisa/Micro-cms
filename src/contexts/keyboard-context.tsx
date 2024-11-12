@@ -1,6 +1,4 @@
 import React, { createContext, useContext, useEffect, ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useNavigation } from './navigation-context'
 import { Keyboard, X } from 'lucide-react'
 
 interface KeyboardContextType {
@@ -23,8 +21,6 @@ export function KeyboardProvider({ children }: KeyboardProviderProps) {
     const saved = localStorage.getItem('keyboardShortcutsEnabled')
     return saved !== null ? JSON.parse(saved) : true
   })
-  const navigate = useNavigate()
-  const { previousPage, nextPage } = useNavigation()
 
   // Save the keyboard shortcuts state to localStorage whenever it changes
   useEffect(() => {
@@ -32,9 +28,9 @@ export function KeyboardProvider({ children }: KeyboardProviderProps) {
   }, [keyboardShortcutsEnabled])
 
   useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (!keyboardShortcutsEnabled) return
+    if (!keyboardShortcutsEnabled) return
 
+    function handleKeyDown(event: KeyboardEvent) {
       // Search shortcut (Cmd/Ctrl + K)
       if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
         event.preventDefault()
@@ -45,29 +41,11 @@ export function KeyboardProvider({ children }: KeyboardProviderProps) {
       if (event.key === 'Escape') {
         setIsSearchOpen(false)
       }
-
-      // Navigation shortcuts (Alt + Arrow keys)
-      if (event.altKey) {
-        switch (event.key) {
-          case 'ArrowLeft':
-            if (previousPage) {
-              event.preventDefault()
-              navigate(previousPage.href)
-            }
-            break
-          case 'ArrowRight':
-            if (nextPage) {
-              event.preventDefault()
-              navigate(nextPage.href)
-            }
-            break
-        }
-      }
     }
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [navigate, previousPage, nextPage, keyboardShortcutsEnabled])
+  }, [keyboardShortcutsEnabled])
 
   return (
     <KeyboardContext.Provider 

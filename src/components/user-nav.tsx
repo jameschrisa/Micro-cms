@@ -1,4 +1,4 @@
-import { CircleUserRound, Settings, LogOut, Bell, Shield, Key } from "lucide-react"
+import { UserCog, Settings, LogOut, Bell, Shield, Key } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 
@@ -76,7 +76,7 @@ export function UserNav() {
         aria-haspopup="true"
         aria-expanded={isOpen}
       >
-        <CircleUserRound className="h-5 w-5 mr-2" />
+        <UserCog className="h-5 w-5 mr-2" />
         <span>Profile</span>
       </button>
 
@@ -88,7 +88,7 @@ export function UserNav() {
           onKeyDown={handleKeyDown}
         >
           <div className="flex items-center gap-3 p-3">
-            <CircleUserRound className="h-8 w-8 text-blue-600" />
+            <UserCog className="h-8 w-8 text-blue-600" />
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium">admin@example.com</p>
               <p className="text-xs text-muted-foreground">Administrator</p>

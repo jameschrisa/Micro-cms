@@ -1,15 +1,17 @@
 import { createBrowserRouter, RouterProvider, createRoutesFromElements, Route, useLocation, Outlet } from 'react-router-dom'
 import { SiteHeader } from './components/layout/site-header'
 import { Sidebar } from './components/layout/sidebar'
-import { NavigationProvider, useNavigation, findAdjacentPages } from './contexts/navigation-context'
-import { KeyboardProvider, KeyboardShortcuts } from './contexts/keyboard-context'
-import { SidebarProvider, useSidebar } from './contexts/sidebar-context'
+import { useNavigation, findAdjacentPages } from './contexts/navigation-context'
+import { KeyboardShortcuts } from './contexts/keyboard-context'
+import { useSidebar } from './contexts/sidebar-context'
 import { DocPage } from './components/doc-page'
 import { SettingsPage } from './pages/settings'
 import { useEffect, useState } from 'react'
 import { SidebarItems } from './types/sidebar'
 import { db } from './services/db'
 import { ToastContainer } from './components/ui/toast'
+import { Providers } from './providers'
+import { KeyboardNavigation } from './components/keyboard-navigation'
 
 function NavigationUpdater() {
   const location = useLocation()
@@ -140,7 +142,7 @@ function DynamicDocPage() {
   )
 }
 
-function AppWithProviders() {
+function Root() {
   const [initialItems, setInitialItems] = useState<SidebarItems>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -164,44 +166,52 @@ function AppWithProviders() {
   }
 
   return (
-    <NavigationProvider>
-      <KeyboardProvider>
-        <SidebarProvider initialItems={initialItems}>
-          <NavigationUpdater />
-          <ToastContainer />
-        </SidebarProvider>
-      </KeyboardProvider>
-    </NavigationProvider>
+    <Providers>
+      <ToastContainer />
+      <Outlet />
+    </Providers>
+  )
+}
+
+function KeyboardNavigationWrapper() {
+  return (
+    <KeyboardNavigation>
+      <Outlet />
+    </KeyboardNavigation>
   )
 }
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route element={<AppWithProviders />}>
-      <Route
-        path="/"
-        element={
-          <DocsLayout>
-            <Introduction />
-          </DocsLayout>
-        }
-      />
-      <Route
-        path="/docs/*"
-        element={
-          <DocsLayout>
-            <DynamicDocPage />
-          </DocsLayout>
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <DocsLayout>
-            <SettingsPage />
-          </DocsLayout>
-        }
-      />
+    <Route element={<Root />}>
+      <Route element={<NavigationUpdater />}>
+        <Route element={<KeyboardNavigationWrapper />}>
+          <Route
+            path="/"
+            element={
+              <DocsLayout>
+                <Introduction />
+              </DocsLayout>
+            }
+          />
+          <Route
+            path="/docs/*"
+            element={
+              <DocsLayout>
+                <DynamicDocPage />
+              </DocsLayout>
+            }
+          />
+        </Route>
+        <Route
+          path="/settings"
+          element={
+            <DocsLayout>
+              <SettingsPage />
+            </DocsLayout>
+          }
+        />
+      </Route>
     </Route>
   )
 )

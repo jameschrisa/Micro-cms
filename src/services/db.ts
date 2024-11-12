@@ -27,7 +27,7 @@ class DocumentDatabase extends Dexie {
   constructor() {
     super('R00kDocDB');
     
-    this.version(1).stores({
+    this.version(11).stores({
       pageContents: 'path',
       sidebarConfig: 'id',
       siteContent: 'id'
