@@ -1,9 +1,10 @@
 import { GripVertical, Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
-import { Droppable, Draggable } from 'react-beautiful-dnd'
+import { Droppable } from 'react-beautiful-dnd'
+import { memo } from 'react'
 import { SectionProps } from './types'
 import { TopicItem } from './topic-item'
 
-export function SectionItem({ 
+export const SectionItem = memo(function SectionItem({ 
   section, 
   sectionIndex, 
   isExpanded, 
@@ -51,9 +52,14 @@ export function SectionItem({
       className="border rounded-lg p-4 space-y-4 bg-card"
     >
       <div className="flex items-center gap-2">
-        <div {...provided.dragHandleProps}>
-          <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab active:cursor-grabbing" />
-        </div>
+        <button
+          type="button"
+          {...provided.dragHandleProps}
+          className="p-1 rounded hover:bg-accent cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          aria-label="Drag to reorder section"
+        >
+          <GripVertical className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
+        </button>
         <input
           type="text"
           value={section.title}
@@ -80,32 +86,26 @@ export function SectionItem({
 
       {isExpanded && (
         <>
-          <Droppable droppableId={`section-${sectionIndex}-topics`} type={`${sectionIndex}`}>
-            {(provided) => (
+          <Droppable droppableId={`section-${sectionIndex}`} type="topic">
+            {(droppableProvided, snapshot) => (
               <div
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-                className="space-y-4 pl-7"
+                ref={droppableProvided.innerRef}
+                {...droppableProvided.droppableProps}
+                className={`space-y-4 pl-7 rounded-md transition-colors ${
+                  snapshot.isDraggingOver ? 'bg-accent/50' : ''
+                }`}
               >
                 {section.items.map((topic, topicIndex) => (
-                  <Draggable
+                  <TopicItem
                     key={`topic-${sectionIndex}-${topicIndex}`}
-                    draggableId={`topic-${sectionIndex}-${topicIndex}`}
-                    index={topicIndex}
-                  >
-                    {(provided) => (
-                      <TopicItem
-                        topic={topic}
-                        sectionIndex={sectionIndex}
-                        topicIndex={topicIndex}
-                        onUpdate={(newTopic) => handleUpdateTopic(topicIndex, newTopic)}
-                        onRemove={() => handleRemoveTopic(topicIndex)}
-                        provided={provided}
-                      />
-                    )}
-                  </Draggable>
+                    topic={topic}
+                    sectionIndex={sectionIndex}
+                    topicIndex={topicIndex}
+                    onUpdate={(newTopic) => handleUpdateTopic(topicIndex, newTopic)}
+                    onRemove={() => handleRemoveTopic(topicIndex)}
+                  />
                 ))}
-                {provided.placeholder}
+                {droppableProvided.placeholder}
               </div>
             )}
           </Droppable>
@@ -120,4 +120,4 @@ export function SectionItem({
       )}
     </div>
   )
-}
+})

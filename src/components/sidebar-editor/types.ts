@@ -20,7 +20,6 @@ export interface TopicProps {
   topicIndex: number
   onUpdate: (newTopic: SidebarItems[0]['items'][0]) => void
   onRemove: () => void
-  provided: any
 }
 
 export interface EditorState {

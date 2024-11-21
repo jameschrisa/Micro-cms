@@ -1,10 +1,11 @@
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd'
 import { Plus, Save, X } from 'lucide-react'
+import { memo } from 'react'
 import { SidebarEditorProps } from './types'
 import { useEditor } from './use-editor'
 import { SectionItem } from './section-item'
 
-export function SidebarEditor({ onClose }: SidebarEditorProps) {
+export const SidebarEditor = memo(function SidebarEditor({ onClose }: SidebarEditorProps) {
   const [
     { localItems, hasChanges, expandedSections },
     {
@@ -18,29 +19,46 @@ export function SidebarEditor({ onClose }: SidebarEditorProps) {
   ] = useEditor()
 
   const handleDragEnd = (result: DropResult) => {
-    if (!result.destination) return
+    if (!result.destination || result.destination.index === result.source.index) return
 
     const { source, destination, type } = result
-
-    // Create a new copy of items
     const newItems = Array.from(localItems)
 
     if (type === 'section') {
       // Reorder sections
       const [removed] = newItems.splice(source.index, 1)
       newItems.splice(destination.index, 0, removed)
-    } else {
-      // Reorder topics within a section
-      const sectionIndex = parseInt(type)
-      const section = newItems[sectionIndex]
-      const newTopics = Array.from(section.items)
-      const [removed] = newTopics.splice(source.index, 1)
-      newTopics.splice(destination.index, 0, removed)
-      section.items = newTopics
-    }
+      setLocalItems(newItems)
+      setHasChanges(true)
+    } else if (type === 'topic') {
+      // Extract section indices from droppableIds
+      const sourceSectionId = source.droppableId
+      const destSectionId = destination.droppableId
+      const sourceSectionIndex = parseInt(sourceSectionId.split('-')[1])
+      const destSectionIndex = parseInt(destSectionId.split('-')[1])
+      
+      if (isNaN(sourceSectionIndex) || isNaN(destSectionIndex)) return
+      
+      const sourceSection = newItems[sourceSectionIndex]
+      const destSection = newItems[destSectionIndex]
+      
+      if (!sourceSection || !destSection) return
 
-    setLocalItems(newItems)
-    setHasChanges(true)
+      // If moving within the same section
+      if (sourceSectionIndex === destSectionIndex) {
+        const newTopics = Array.from(sourceSection.items)
+        const [removed] = newTopics.splice(source.index, 1)
+        newTopics.splice(destination.index, 0, removed)
+        sourceSection.items = newTopics
+      } else {
+        // Moving between different sections
+        const [removed] = sourceSection.items.splice(source.index, 1)
+        destSection.items.splice(destination.index, 0, removed)
+      }
+      
+      setLocalItems(newItems)
+      setHasChanges(true)
+    }
   }
 
   return (
@@ -88,32 +106,34 @@ export function SidebarEditor({ onClose }: SidebarEditorProps) {
               </button>
             </div>
 
-            <Droppable droppableId="sections" type="section">
-              {(provided) => (
+            <Droppable droppableId="root" type="section">
+              {(provided, snapshot) => (
                 <div
-                  {...provided.droppableProps}
                   ref={provided.innerRef}
-                  className="space-y-4 max-h-[calc(100vh-12rem)] overflow-y-auto"
+                  {...provided.droppableProps}
+                  className={`space-y-4 max-h-[calc(100vh-12rem)] overflow-y-auto rounded-md transition-colors ${
+                    snapshot.isDraggingOver ? 'bg-accent/50' : ''
+                  }`}
                 >
-                  {localItems.map((section, sectionIndex) => (
+                  {localItems.map((section, index) => (
                     <Draggable
-                      key={`section-${sectionIndex}`}
-                      draggableId={`section-${sectionIndex}`}
-                      index={sectionIndex}
+                      key={`section-${index}`}
+                      draggableId={`section-${index}`}
+                      index={index}
                     >
                       {(provided) => (
                         <SectionItem
                           section={section}
-                          sectionIndex={sectionIndex}
-                          isExpanded={expandedSections.includes(sectionIndex)}
-                          onToggle={() => toggleSection(sectionIndex)}
+                          sectionIndex={index}
+                          isExpanded={expandedSections.includes(index)}
+                          onToggle={() => toggleSection(index)}
                           onUpdate={(newSection) => {
                             const newItems = [...localItems]
-                            newItems[sectionIndex] = newSection
+                            newItems[index] = newSection
                             setLocalItems(newItems)
                             setHasChanges(true)
                           }}
-                          onRemove={() => handleRemoveSection(sectionIndex)}
+                          onRemove={() => handleRemoveSection(index)}
                           provided={provided}
                         />
                       )}
@@ -128,4 +148,4 @@ export function SidebarEditor({ onClose }: SidebarEditorProps) {
       </div>
     </div>
   )
-}
+})
