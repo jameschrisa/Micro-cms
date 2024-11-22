@@ -9,7 +9,10 @@ export function useEditor(): [EditorState, EditorActions] {
   const { items, updateItems } = useSidebar()
   const [localItems, setLocalItems] = useState<SidebarItems>(items)
   const [hasChanges, setHasChanges] = useState(false)
-  const [expandedSections, setExpandedSections] = useState<number[]>([])
+  // Initialize expandedSections with indices of all sections
+  const [expandedSections, setExpandedSections] = useState<number[]>(
+    Array.from({ length: items.length }, (_, i) => i)
+  )
 
   const toggleSection = (index: number) => {
     setExpandedSections(prev =>
@@ -34,6 +37,8 @@ export function useEditor(): [EditorState, EditorActions] {
     const newItems = [...localItems, { title: 'New Section', items: [] }]
     setLocalItems(newItems)
     setHasChanges(true)
+    // Expand the newly added section
+    setExpandedSections(prev => [...prev, newItems.length - 1])
   }
 
   const handleRemoveSection = (index: number) => {
@@ -41,13 +46,16 @@ export function useEditor(): [EditorState, EditorActions] {
     newItems.splice(index, 1)
     setLocalItems(newItems)
     setHasChanges(true)
+    // Remove the section from expandedSections
+    setExpandedSections(prev => prev.filter(i => i !== index))
   }
 
   const handleAddTopic = (sectionIndex: number) => {
     const newItems = [...localItems]
     newItems[sectionIndex].items.push({
       title: 'New Topic',
-      href: `/docs/new-topic-${Date.now()}`
+      href: `/docs/new-topic-${Date.now()}`,
+      description: 'Enter a description for this topic'
     })
     setLocalItems(newItems)
     setHasChanges(true)
