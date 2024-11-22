@@ -4,8 +4,11 @@ import { memo } from 'react'
 import { SidebarEditorProps } from './types'
 import { useEditor } from './use-editor'
 import { SectionItem } from './section-item'
+import { useAuth } from '../../contexts/auth-context'
+import { Navigate } from 'react-router-dom'
 
 export const SidebarEditor = memo(function SidebarEditor({ onClose }: SidebarEditorProps) {
+  const { user } = useAuth()
   const [
     { localItems, hasChanges, expandedSections },
     {
@@ -17,6 +20,11 @@ export const SidebarEditor = memo(function SidebarEditor({ onClose }: SidebarEdi
       handleRemoveSection
     }
   ] = useEditor()
+
+  // Protect the editor from non-admin users
+  if (!user || user.role !== 'admin') {
+    return <Navigate to="/" replace />
+  }
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return

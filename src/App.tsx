@@ -1,11 +1,14 @@
-import { createBrowserRouter, RouterProvider, createRoutesFromElements, Route, useLocation, Outlet } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider, createRoutesFromElements, Route, useLocation, Outlet, Navigate } from 'react-router-dom'
 import { SiteHeader } from './components/layout/site-header'
 import { Sidebar } from './components/layout/sidebar'
 import { useNavigation, findAdjacentPages } from './contexts/navigation-context'
 import { KeyboardShortcuts } from './contexts/keyboard-context'
 import { useSidebar } from './contexts/sidebar-context'
+import { useAuth } from './contexts/auth-context'
 import { DocPage } from './components/doc-page'
 import { SettingsPage } from './pages/settings'
+import { SecurityPage } from './pages/security'
+import { LoginPage } from './pages/login'
 import { useEffect, useState } from 'react'
 import { SidebarItems } from './types/sidebar'
 import { db } from './services/db'
@@ -27,16 +30,37 @@ function NavigationUpdater() {
   return <Outlet />
 }
 
-// Mock authentication state - in a real app, this would come from your auth system
-const isLoggedIn = true
+function RequireAuth({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth()
+  const location = useLocation()
+
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />
+  }
+
+  return <>{children}</>
+}
+
+function RequireAdmin({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth()
+  const location = useLocation()
+
+  if (!user || user.role !== 'admin') {
+    return <Navigate to="/" state={{ from: location }} replace />
+  }
+
+  return <>{children}</>
+}
 
 function DocsLayout({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth()
+  
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <div className="container flex-1">
         <div className="grid grid-cols-[220px_1fr] gap-6 lg:grid-cols-[240px_1fr]">
-          <Sidebar isLoggedIn={isLoggedIn} />
+          <Sidebar isLoggedIn={!!user} />
           <main className="relative py-6 lg:gap-10 lg:py-8">
             <div className="mx-auto w-full min-w-0">
               {children}
@@ -94,7 +118,6 @@ function DynamicDocPage() {
   const location = useLocation()
   const { items } = useSidebar()
 
-  // Find the current page info from navigation
   const pageInfo = items.reduce<{ title: string; description: string } | undefined>((found, section) => {
     if (found) return found
     const topic = section.items.find(item => item.href === location.pathname)
@@ -184,33 +207,50 @@ function KeyboardNavigationWrapper() {
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route element={<Root />}>
+      <Route path="/login" element={<LoginPage />} />
       <Route element={<NavigationUpdater />}>
         <Route element={<KeyboardNavigationWrapper />}>
           <Route
             path="/"
             element={
-              <DocsLayout>
-                <Introduction />
-              </DocsLayout>
+              <RequireAuth>
+                <DocsLayout>
+                  <Introduction />
+                </DocsLayout>
+              </RequireAuth>
             }
           />
           <Route
             path="/docs/*"
             element={
-              <DocsLayout>
-                <DynamicDocPage />
-              </DocsLayout>
+              <RequireAuth>
+                <DocsLayout>
+                  <DynamicDocPage />
+                </DocsLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <RequireAdmin>
+                <DocsLayout>
+                  <SettingsPage />
+                </DocsLayout>
+              </RequireAdmin>
+            }
+          />
+          <Route
+            path="/security"
+            element={
+              <RequireAdmin>
+                <DocsLayout>
+                  <SecurityPage />
+                </DocsLayout>
+              </RequireAdmin>
             }
           />
         </Route>
-        <Route
-          path="/settings"
-          element={
-            <DocsLayout>
-              <SettingsPage />
-            </DocsLayout>
-          }
-        />
       </Route>
     </Route>
   )

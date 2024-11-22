@@ -1,8 +1,8 @@
 import { ReactNode, useEffect, useState } from 'react'
 import { KeyboardProvider } from './contexts/keyboard-context'
-import { UserRoleProvider } from './contexts/user-role-context'
 import { SidebarProvider } from './contexts/sidebar-context'
 import { NavigationProvider } from './contexts/navigation-context'
+import { AuthProvider } from './contexts/auth-context'
 import { SidebarItems } from './types/sidebar'
 import { db } from './services/db'
 
@@ -34,7 +34,7 @@ export function Providers({ children }: ProvidersProps) {
   }
 
   return (
-    <UserRoleProvider>
+    <AuthProvider>
       <NavigationProvider>
         <KeyboardProvider>
           <SidebarProvider initialItems={initialItems}>
@@ -42,6 +42,6 @@ export function Providers({ children }: ProvidersProps) {
           </SidebarProvider>
         </KeyboardProvider>
       </NavigationProvider>
-    </UserRoleProvider>
+    </AuthProvider>
   )
 }

@@ -1,6 +1,7 @@
-import { UserCog, Settings, LogOut, Bell, Shield, Key } from "lucide-react"
+import { UserCog, Settings, LogOut, Shield } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
+import { useAuth } from "../contexts/auth-context"
 
 export function UserNav() {
   const [isOpen, setIsOpen] = useState(false)
@@ -8,6 +9,7 @@ export function UserNav() {
   const buttonRef = useRef<HTMLButtonElement>(null)
   const menuItemRefs = useRef<(HTMLButtonElement | null)[]>([])
   const navigate = useNavigate()
+  const { user, logout } = useAuth()
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -66,6 +68,28 @@ export function UserNav() {
     navigate('/settings')
   }
 
+  const handleSecurityClick = () => {
+    setIsOpen(false)
+    navigate('/security')
+  }
+
+  const handleLogout = () => {
+    setIsOpen(false)
+    logout()
+    navigate('/login')
+  }
+
+  if (!user) {
+    return (
+      <Link
+        to="/login"
+        className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-blue-600 text-white hover:bg-blue-700 h-9 px-4 py-2 shadow-sm"
+      >
+        Login
+      </Link>
+    )
+  }
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
@@ -90,47 +114,44 @@ export function UserNav() {
           <div className="flex items-center gap-3 p-3">
             <UserCog className="h-8 w-8 text-blue-600" />
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium">admin@example.com</p>
-              <p className="text-xs text-muted-foreground">Administrator</p>
+              <p className="text-sm font-medium">{user.username}</p>
+              <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
             </div>
           </div>
 
           <div className="h-px bg-border my-1" />
           
-          <button 
-            ref={el => menuItemRefs.current[0] = el}
-            className="relative flex w-full cursor-default select-none items-center rounded-sm px-3 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground transition-colors"
-            role="menuitem"
-          >
-            <Bell className="mr-3 h-4 w-4" />
-            <span>Notifications</span>
-          </button>
+          {user.role === 'admin' && (
+            <>
+              <button 
+                ref={el => menuItemRefs.current[0] = el}
+                className="relative flex w-full cursor-default select-none items-center rounded-sm px-3 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground transition-colors"
+                role="menuitem"
+                onClick={handleSecurityClick}
+              >
+                <Shield className="mr-3 h-4 w-4" />
+                <span>Security</span>
+              </button>
 
-          <button 
-            ref={el => menuItemRefs.current[1] = el}
-            className="relative flex w-full cursor-default select-none items-center rounded-sm px-3 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground transition-colors"
-            role="menuitem"
-          >
-            <Shield className="mr-3 h-4 w-4" />
-            <span>Security</span>
-          </button>
+              <button 
+                ref={el => menuItemRefs.current[1] = el}
+                className="relative flex w-full cursor-default select-none items-center rounded-sm px-3 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground transition-colors"
+                role="menuitem"
+                onClick={handleSettingsClick}
+              >
+                <Settings className="mr-3 h-4 w-4" />
+                <span>Settings</span>
+              </button>
+
+              <div className="h-px bg-border my-1" />
+            </>
+          )}
 
           <button 
             ref={el => menuItemRefs.current[2] = el}
-            className="relative flex w-full cursor-default select-none items-center rounded-sm px-3 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground transition-colors"
-            role="menuitem"
-            onClick={handleSettingsClick}
-          >
-            <Settings className="mr-3 h-4 w-4" />
-            <span>Settings</span>
-          </button>
-
-          <div className="h-px bg-border my-1" />
-
-          <button 
-            ref={el => menuItemRefs.current[3] = el}
             className="relative flex w-full cursor-default select-none items-center rounded-sm px-3 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground text-red-500 hover:text-red-500 transition-colors"
             role="menuitem"
+            onClick={handleLogout}
           >
             <LogOut className="mr-3 h-4 w-4" />
             <span>Log out</span>

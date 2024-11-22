@@ -4,6 +4,7 @@ import { ChevronRight, Settings } from "lucide-react"
 import { useState } from "react"
 import { SidebarEditor } from "../sidebar-editor"
 import { useSidebar } from "../../contexts/sidebar-context"
+import { useAuth } from "../../contexts/auth-context"
 
 interface SidebarProps {
   isLoggedIn?: boolean
@@ -12,6 +13,7 @@ interface SidebarProps {
 export function Sidebar({ isLoggedIn = false }: SidebarProps) {
   const [isEditing, setIsEditing] = useState(false)
   const { items } = useSidebar()
+  const { user } = useAuth()
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>(() => {
     // Initialize first three sections as expanded
     return items.reduce((acc, section, index) => {
@@ -33,7 +35,7 @@ export function Sidebar({ isLoggedIn = false }: SidebarProps) {
         <ScrollArea className="py-6 pr-6 lg:py-8">
           <div className="flex items-center justify-between mb-4 px-2">
             <h4 className="text-sm font-medium">Navigation</h4>
-            {isLoggedIn && (
+            {user?.role === 'admin' && (
               <button
                 onClick={() => setIsEditing(true)}
                 className="rounded-md p-1 hover:bg-accent"
