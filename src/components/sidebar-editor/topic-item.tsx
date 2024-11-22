@@ -12,7 +12,7 @@ export const TopicItem = memo(function TopicItem({
 }: TopicProps) {
   return (
     <Draggable
-      draggableId={`topic-${sectionIndex}-${topicIndex}`}
+      draggableId={`${sectionIndex}-${topicIndex}`}
       index={topicIndex}
     >
       {(provided, snapshot) => (

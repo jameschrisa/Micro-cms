@@ -19,23 +19,20 @@ export const SidebarEditor = memo(function SidebarEditor({ onClose }: SidebarEdi
   ] = useEditor()
 
   const handleDragEnd = (result: DropResult) => {
-    if (!result.destination || result.destination.index === result.source.index) return
+    if (!result.destination) return
 
     const { source, destination, type } = result
     const newItems = Array.from(localItems)
 
     if (type === 'section') {
-      // Reorder sections
+      // Simple array move for sections
       const [removed] = newItems.splice(source.index, 1)
       newItems.splice(destination.index, 0, removed)
       setLocalItems(newItems)
       setHasChanges(true)
     } else if (type === 'topic') {
-      // Extract section indices from droppableIds
-      const sourceSectionId = source.droppableId
-      const destSectionId = destination.droppableId
-      const sourceSectionIndex = parseInt(sourceSectionId.split('-')[1])
-      const destSectionIndex = parseInt(destSectionId.split('-')[1])
+      const sourceSectionIndex = parseInt(source.droppableId)
+      const destSectionIndex = parseInt(destination.droppableId)
       
       if (isNaN(sourceSectionIndex) || isNaN(destSectionIndex)) return
       
@@ -106,7 +103,7 @@ export const SidebarEditor = memo(function SidebarEditor({ onClose }: SidebarEdi
               </button>
             </div>
 
-            <Droppable droppableId="root" type="section">
+            <Droppable droppableId="sections" type="section">
               {(provided, snapshot) => (
                 <div
                   ref={provided.innerRef}
@@ -117,8 +114,8 @@ export const SidebarEditor = memo(function SidebarEditor({ onClose }: SidebarEdi
                 >
                   {localItems.map((section, index) => (
                     <Draggable
-                      key={`section-${index}`}
-                      draggableId={`section-${index}`}
+                      key={index.toString()}
+                      draggableId={index.toString()}
                       index={index}
                     >
                       {(provided) => (

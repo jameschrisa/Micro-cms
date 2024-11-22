@@ -86,7 +86,7 @@ export const SectionItem = memo(function SectionItem({
 
       {isExpanded && (
         <>
-          <Droppable droppableId={`section-${sectionIndex}`} type="topic">
+          <Droppable droppableId={sectionIndex.toString()} type="topic">
             {(droppableProvided, snapshot) => (
               <div
                 ref={droppableProvided.innerRef}
@@ -97,7 +97,7 @@ export const SectionItem = memo(function SectionItem({
               >
                 {section.items.map((topic, topicIndex) => (
                   <TopicItem
-                    key={`topic-${sectionIndex}-${topicIndex}`}
+                    key={`${sectionIndex}-${topicIndex}`}
                     topic={topic}
                     sectionIndex={sectionIndex}
                     topicIndex={topicIndex}
