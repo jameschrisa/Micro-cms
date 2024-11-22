@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/auth-context'
+import logo from '../assets/logo.svg'
 
 export function LoginPage() {
   const [username, setUsername] = useState<'admin' | 'guest'>('guest')
@@ -20,12 +21,17 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background">
       <div className="w-full max-w-md space-y-8 rounded-lg border bg-card p-8 shadow-lg">
-        <div className="space-y-2 text-center">
-          <h1 className="text-2xl font-bold">Login</h1>
+        <div className="flex flex-col items-center space-y-2 text-center">
+          <img 
+            src={logo} 
+            alt="r00k Logo" 
+            className="h-24 w-24"
+          />
+          <h1 className="text-2xl font-bold">Welcome to r00k</h1>
           <p className="text-sm text-muted-foreground">
-            Sign in to access your account
+            Sign in to access the documentation
           </p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -55,7 +61,7 @@ export function LoginPage() {
             />
           </div>
           {error && (
-            <p className="text-sm text-red-500">{error}</p>
+            <p className="text-sm text-red-500 text-center">{error}</p>
           )}
           <button
             type="submit"
